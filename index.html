@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nepal — My Journey Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+
+    <style>
+        :root {
+            --bg: #0d0f14;
+            --surface: #13161e;
+            --card: #1a1e28;
+            --border: #252a38;
+            --accent: #c8965a;
+            --accent2: #7fb3c8;
+            --text: #e8e0d0;
+            --muted: #6b7280;
+            --p1: #c0392b;
+            --p2: #27ae60;
+            --p3: #2980b9;
+            --p4: #5dade2;
+            --p5: #82e0aa;
+            --p6: #d4ac0d;
+            --p7: #e67e22;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        .app {
+            display: grid;
+            grid-template-rows: 62px 1fr;
+            height: 100vh;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            flex-shrink: 0;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .logo-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .logo-sub {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+        }
+
+        .stat-pill .num {
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+        }
+
+        .stat-pill .lbl {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .prog-wrap { width: 110px; }
+
+        .prog-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.62rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 5px;
+        }
+
+        .prog-track {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background: var(--bg) !important;
+        }
+
+        .leaflet-container {
+            background: var(--bg) !important;
+            font-family: 'DM Sans', sans-serif !important;
+        }
+
+        .leaflet-tooltip {
+            background: rgba(13,15,20,0.95) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text) !important;
+            border-radius: 6px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.75rem !important;
+            padding: 4px 10px !important;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.6) !important;
+            pointer-events: none !important;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .leaflet-tooltip::before { display: none !important; }
+
+        .map-controls {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .map-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 13px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.45);
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .map-btn:hover {
+            background: var(--card);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .map-btn.active {
+            background: rgba(200,150,90,0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-top {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-hint {
+            font-size: 0.66rem;
+            color: var(--muted);
+        }
+
+        .prov-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 12px 7px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .prov-tab {
+            padding: 3px 9px;
+            border-radius: 100px;
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.18s;
+            opacity: 0.5;
+            color: var(--text);
+            background: var(--card);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .prov-tab:hover { opacity: 0.8; }
+        .prov-tab.active { opacity: 1; }
+
+        .prov-tab[data-p="all"].active { border-color: var(--accent); color: var(--accent); }
+        .prov-tab[data-p="1"] { color: var(--p1); } .prov-tab[data-p="1"].active { border-color: var(--p1); }
+        .prov-tab[data-p="2"] { color: var(--p2); } .prov-tab[data-p="2"].active { border-color: var(--p2); }
+        .prov-tab[data-p="3"] { color: var(--p3); } .prov-tab[data-p="3"].active { border-color: var(--p3); }
+        .prov-tab[data-p="4"] { color: var(--p4); } .prov-tab[data-p="4"].active { border-color: var(--p4); }
+        .prov-tab[data-p="5"] { color: var(--p5); } .prov-tab[data-p="5"].active { border-color: var(--p5); }
+        .prov-tab[data-p="6"] { color: var(--p6); } .prov-tab[data-p="6"].active { border-color: var(--p6); }
+        .prov-tab[data-p="7"] { color: var(--p7); } .prov-tab[data-p="7"].active { border-color: var(--p7); }
+
+        .district-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px 7px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .district-list::-webkit-scrollbar { width: 4px; }
+        .district-list::-webkit-scrollbar-track { background: transparent; }
+        .district-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .prov-group-header {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 7px 4px;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            color: var(--muted);
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            z-index: 2;
+        }
+
+        .prov-group-header .gh-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .prov-group-header .gh-count { margin-left: auto; font-size: 0.6rem; opacity: 0.7; }
+
+        .district-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 7px;
+            border-radius: 7px;
+            margin-bottom: 1px;
+            transition: background 0.12s;
+            cursor: pointer;
+            border-left: 2px solid transparent;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .district-item:hover { background: var(--card); }
+
+        .district-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .district-dot.unvisited { background: var(--muted); opacity: 0.3; }
+        .district-dot.vis { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+
+        .district-name { font-size: 0.76rem; color: var(--text); opacity: 0.6; flex: 1; transition: all 0.2s; }
+        .district-item.vis-item .district-name { opacity: 1; color: var(--accent); }
+        .district-check { font-size: 0.62rem; color: var(--accent); opacity: 0; transition: opacity 0.2s; }
+        .district-item.vis-item .district-check { opacity: 1; }
+
+        @keyframes focusFlash {
+            0%   { background: rgba(200,150,90,0.12); border-left-color: var(--accent); }
+            100% { background: transparent; border-left-color: transparent; }
+        }
+        .district-item.flash { animation: focusFlash 2s ease forwards; }
+
+        .legend { padding: 9px 16px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .legend-title { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .legend-rows { display: flex; flex-direction: column; gap: 4px; }
+        .legend-row { display: flex; align-items: center; gap: 7px; font-size: 0.7rem; color: var(--muted); }
+        .sw { width: 16px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+        .sw.unvisited { background: var(--muted); opacity: 0.4; }
+        .sw.visited-sw { background: #1c1c1c; border: 1px solid #555; }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 16px;
+            font-size: 0.78rem;
+            color: var(--text);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast .tn { color: var(--accent); font-weight: 600; }
+
+        @media (max-width: 700px) {
+            .app { grid-template-rows: 52px 1fr; }
+            header { padding: 0 10px; gap: 7px; }
+            .logo-sub { display: none; }
+            .logo-title { font-size: 1rem; }
+            .stat-pill .lbl { display: none; }
+            .stat-pill { padding: 4px 9px; }
+            .stat-pill .num { font-size: 0.88rem; }
+            .prog-wrap { width: 75px; }
+            .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+            #map { height: 100%; min-height: 0; }
+            .sidebar { border-left: none; border-top: 2px solid var(--border); max-height: 40vh; min-height: 160px; }
+            .map-controls { top: 8px; left: 8px; gap: 5px; }
+            .map-btn { font-size: 0.67rem; padding: 7px 10px; }
+            .toast { bottom: calc(40vh + 10px); }
+        }
+
+        @media (max-width: 380px) {
+            .prog-wrap { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <header>
+        <div class="header-left">
+            <span class="logo-title">🏔 Nepal Journey</span>
+            <span class="logo-sub">Visited Districts Explorer</span>
+        </div>
+        <div class="header-right">
+            <div class="stat-pill">
+                <span class="num" id="visited-count">0</span>
+                <span class="lbl">Visited</span>
+            </div>
+            <div class="stat-pill">
+                <span class="num">77</span>
+                <span class="lbl">Districts</span>
+            </div>
+            <div class="prog-wrap">
+                <div class="prog-labels">
+                    <span>Progress</span>
+                    <span id="pct-label">0%</span>
+                </div>
+                <div class="prog-track">
+                    <div class="prog-fill" id="prog-fill"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main">
+        <div id="map"></div>
+
+        <div class="map-controls">
+            <button class="map-btn active" id="provinces-btn" onclick="goToProvinceView()">🗾 Show All Provinces</button>
+            <button class="map-btn" id="districts-btn" onclick="showAllDistricts()">🗺 Show All Districts</button>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <div class="sidebar-title">Districts</div>
+                <div class="sidebar-hint">Click map or list to toggle visited</div>
+            </div>
+
+            <div class="prov-tabs" id="prov-tabs">
+                <div class="prov-tab active" data-p="all" onclick="filterProvince('all')">All</div>
+                <div class="prov-tab" data-p="1" onclick="filterProvince(1)">P1</div>
+                <div class="prov-tab" data-p="2" onclick="filterProvince(2)">P2</div>
+                <div class="prov-tab" data-p="3" onclick="filterProvince(3)">P3</div>
+                <div class="prov-tab" data-p="4" onclick="filterProvince(4)">P4</div>
+                <div class="prov-tab" data-p="5" onclick="filterProvince(5)">P5</div>
+                <div class="prov-tab" data-p="6" onclick="filterProvince(6)">P6</div>
+                <div class="prov-tab" data-p="7" onclick="filterProvince(7)">P7</div>
+            </div>
+
+            <div class="district-list" id="district-list">
+                <div style="padding:24px 10px;color:var(--muted);font-size:0.76rem;text-align:center;line-height:1.8">
+                    Click a province on the map<br>or use the buttons above
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-rows">
+                    <div class="legend-row"><div class="sw unvisited"></div>Not yet visited</div>
+                    <div class="legend-row"><div class="sw visited-sw"></div>Visited ✓</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="text/javascript" src="nepal-province.js"></script>
+<script type="text/javascript" src="province1-district.js"></script>
+<script type="text/javascript" src="province2-district.js"></script>
+<script type="text/javascript" src="province3-district.js"></script>
+<script type="text/javascript" src="province4-district.js"></script>
+<script type="text/javascript" src="province5-district.js"></script>
+<script type="text/javascript" src="province6-district.js"></script>
+<script type="text/javascript" src="province7-district.js"></script>
+
+<script>
+const PROV_COLORS = {
+    1:'#c0392b', 2:'#27ae60', 3:'#2980b9',
+    4:'#5dade2', 5:'#82e0aa', 6:'#d4ac0d', 7:'#e67e22'
+};
+const PROV_NAMES = {
+    1:'Koshi', 2:'Madhesh', 3:'Bagmati',
+    4:'Gandaki', 5:'Lumbini', 6:'Karnali', 7:'Sudurpashchim'
+};
+const PROV_DATA = {
+    1: () => province_1, 2: () => province_2, 3: () => province_3,
+    4: () => province_4, 5: () => province_5, 6: () => province_6, 7: () => province_7
+};
+
+// ── Storage ──
+const STORAGE_KEY = 'nepal_journey_v4';
+function loadVisited() {
+    try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+    catch { return new Set(); }
+}
+function saveVisited() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited])); }
+let visited = loadVisited();
+
+// ── State ──
+// 'provinces' | 'single' | 'all-districts'
+let currentView = 'provinces';
+let activeProvinceNum = null; // which single province is shown
+let activeFilter = 'all';    // sidebar filter
+
+// Cache: pNum -> array of {name, layer} for that province's districts
+// We rebuild per-province each time from the raw GeoJSON.
+// We also keep a flat map: name -> layer for the currently displayed districts.
+const cachedGeoJson = {}; // pNum -> parsed geojson (raw data, already loaded)
+let currentDistrictEntries = []; // [{name, layer, provinceNum}] — only what's on map right now
+
+// ── Map ──
+const map = L.map('map', {
+    scrollWheelZoom: true,
+    touchZoom: true,
+    doubleClickZoom: false,
+    zoomControl: true,
+    dragging: true,
+    tap: true,
+    tapTolerance: 15,
+    inertia: true
+}).setView([28.3949, 84.124], 7);
+map.zoomControl.setPosition('topright');
+
+// Two separate layer groups: one for provinces, one for districts
+const provinceLayerGroup = L.layerGroup().addTo(map);
+const districtLayerGroup = L.layerGroup().addTo(map);
+
+// ── Helpers ──
+function dName(feature) {
+    return (feature.properties.DISTRICT || feature.properties.district || '').trim();
+}
+
+function lighten(hex, amt) {
+    const n = parseInt(hex.replace('#',''), 16);
+    const r = Math.min(255, ((n >> 16) & 0xff) + Math.round(255 * amt));
+    const g = Math.min(255, ((n >> 8) & 0xff) + Math.round(255 * amt));
+    const b = Math.min(255, (n & 0xff) + Math.round(255 * amt));
+    return `rgb(${r},${g},${b})`;
+}
+
+function getProvNum(feature) {
+    return feature.properties.Province || feature.properties.PROVINCE || feature.properties.province;
+}
+
+// ── Feature styling ──
+function styleDistrict(feature, hovered) {
+    const name = dName(feature);
+    const isV = visited.has(name);
+    const pNum = getProvNum(feature);
+    const base = PROV_COLORS[pNum] || '#7fb3c8';
+    if (isV) {
+        return {
+            weight: hovered ? 2.5 : 1.5,
+            color: hovered ? '#999' : '#555',
+            fillColor: hovered ? '#2e2e2e' : '#1a1a1a',
+            fillOpacity: hovered ? 0.97 : 0.9
+        };
+    }
+    return {
+        weight: hovered ? 2.5 : 1.2,
+        color: hovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
+        fillColor: hovered ? lighten(base, 0.18) : base,
+        fillOpacity: hovered ? 0.9 : 0.65
+    };
+}
+
+function styleProvince(feature, hovered) {
+    const pNum = getProvNum(feature);
+    const base = PROV_COLORS[pNum] || '#7fb3c8';
+    return {
+        weight: hovered ? 2.5 : 1.2,
+        color: hovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
+        fillColor: hovered ? lighten(base, 0.18) : base,
+        fillOpacity: hovered ? 0.9 : 0.65
+    };
+}
+
+// ── Province layer (always kept, shown/hidden) ──
+const provinceGeoLayer = L.geoJson(provinceData, {
+    style: f => styleProvince(f, false),
+    onEachFeature(feature, layer) {
+        const pNum = getProvNum(feature);
+        layer.bindTooltip(PROV_NAMES[pNum] || `Province ${pNum}`, {
+            permanent: false, direction: 'center', sticky: false
+        });
+        layer.on({
+            mouseover(e) { e.target.setStyle(styleProvince(feature, true)); e.target.bringToFront(); },
+            mouseout(e)  { e.target.setStyle(styleProvince(feature, false)); },
+            click(e) {
+                const p = getProvNum(e.target.feature);
+                showSingleProvince(p, e.target.getBounds());
+            }
+        });
+    }
+});
+
+// Render province layer into its group
+provinceGeoLayer.addTo(provinceLayerGroup);
+map.fitBounds(provinceGeoLayer.getBounds(), { padding: [20, 20] });
+
+// ── Core: show only ONE province's districts ──
+function showSingleProvince(pNum, bounds) {
+    currentView = 'single';
+    activeProvinceNum = pNum;
+    updateButtonStates();
+
+    // Hide province layer
+    if (map.hasLayer(provinceLayerGroup)) map.removeLayer(provinceLayerGroup);
+
+    // *** KEY FIX: wipe ALL existing district layers before drawing new ones ***
+    districtLayerGroup.clearLayers();
+    currentDistrictEntries = [];
+
+    // Draw only this province's districts
+    drawProvince(pNum);
+
+    // Zoom to this province
+    if (bounds) map.fitBounds(bounds, { padding: [40, 40] });
+
+    // Update sidebar to show only this province
+    buildSidebar(pNum);
+    updateStats();
+}
+
+// ── Draw a province's districts onto districtLayerGroup ──
+function drawProvince(pNum) {
+    const json = PROV_DATA[pNum]();
+    if (!json) return;
+
+    const geoLayer = L.geoJson(json, {
+        style: f => styleDistrict(f, false),
+        onEachFeature(feature, layer) {
+            const name = dName(feature);
+            layer.bindTooltip(name, { permanent: false, direction: 'center', sticky: false });
+            layer.on({
+                mouseover(e) { e.target.setStyle(styleDistrict(feature, true)); e.target.bringToFront(); },
+                mouseout(e)  { e.target.setStyle(styleDistrict(feature, false)); },
+                click()      { toggleVisited(name, layer, feature); }
+            });
+            if (name) {
+                currentDistrictEntries.push({ name, layer, provinceNum: pNum });
+            }
+        }
+    });
+
+    geoLayer.addTo(districtLayerGroup);
+}
+
+// ── Show ALL 7 provinces' districts ──
+function showAllDistricts() {
+    currentView = 'all-districts';
+    activeProvinceNum = null;
+    updateButtonStates();
+
+    // Hide province layer
+    if (map.hasLayer(provinceLayerGroup)) map.removeLayer(provinceLayerGroup);
+
+    // Wipe and redraw all 7
+    districtLayerGroup.clearLayers();
+    currentDistrictEntries = [];
+
+    for (let p = 1; p <= 7; p++) drawProvince(p);
+
+    map.fitBounds(provinceGeoLayer.getBounds(), { padding: [20, 20] });
+    buildSidebar('all');
+    updateStats();
+}
+
+// ── Go back to province overview ──
+function goToProvinceView() {
+    currentView = 'provinces';
+    activeProvinceNum = null;
+    updateButtonStates();
+
+    // Clear all district layers
+    districtLayerGroup.clearLayers();
+    currentDistrictEntries = [];
+
+    // Show province layer
+    if (!map.hasLayer(provinceLayerGroup)) provinceLayerGroup.addTo(map);
+
+    map.fitBounds(provinceGeoLayer.getBounds(), { padding: [20, 20] });
+
+    // Reset sidebar
+    const listEl = document.getElementById('district-list');
+    listEl.innerHTML = `<div style="padding:24px 10px;color:var(--muted);font-size:0.76rem;text-align:center;line-height:1.8">
+        Click a province on the map<br>or use the buttons above
+    </div>`;
+    updateButtonStates();
+}
+
+// ── Update header button active states ──
+function updateButtonStates() {
+    document.getElementById('provinces-btn').classList.toggle('active', currentView === 'provinces');
+    document.getElementById('districts-btn').classList.toggle('active', currentView === 'all-districts');
+}
+
+// ── Toggle visited ──
+function toggleVisited(name, layer, feature) {
+    if (!name) return;
+    if (visited.has(name)) {
+        visited.delete(name);
+        showToast(`<span class="tn">${name}</span> removed`);
+    } else {
+        visited.add(name);
+        showToast(`✓ <span class="tn">${name}</span> visited!`);
+    }
+    saveVisited();
+    if (layer && feature) layer.setStyle(styleDistrict(feature, false));
+    updateStats();
+    buildSidebar(activeFilter);
+}
+
+function toggleFromSidebar(name) {
+    const entry = currentDistrictEntries.find(d => d.name === name);
+    if (entry) {
+        toggleVisited(name, entry.layer, entry.layer.feature);
+    } else {
+        // District not on map (e.g. in province view) — toggle data only
+        if (visited.has(name)) { visited.delete(name); showToast(`<span class="tn">${name}</span> removed`); }
+        else                   { visited.add(name);    showToast(`✓ <span class="tn">${name}</span> visited!`); }
+        saveVisited();
+        updateStats();
+        buildSidebar(activeFilter);
+    }
+}
+
+// ── Sidebar ──
+function buildSidebar(filter) {
+    activeFilter = filter;
+
+    // Update tab highlights
+    document.querySelectorAll('.prov-tab').forEach(t => {
+        t.classList.toggle('active', String(t.dataset.p) === String(filter));
+    });
+
+    // Group currentDistrictEntries by province
+    const byProvince = {};
+    for (let p = 1; p <= 7; p++) byProvince[p] = [];
+    const seen = new Set();
+    currentDistrictEntries.forEach(({ name, provinceNum }) => {
+        if (seen.has(name)) return;
+        seen.add(name);
+        if (byProvince[provinceNum]) byProvince[provinceNum].push(name);
+    });
+    for (let p = 1; p <= 7; p++) byProvince[p].sort((a, b) => a.localeCompare(b, 'ne'));
+
+    const provinces = (filter === 'all') ? [1,2,3,4,5,6,7] : [parseInt(filter)];
+    let html = '';
+
+    provinces.forEach(p => {
+        const names = byProvince[p];
+        if (!names.length) return;
+        const vc = names.filter(n => visited.has(n)).length;
+        html += `<div class="prov-group-header" id="pg-${p}">
+            <div class="gh-dot" style="background:${PROV_COLORS[p]}"></div>
+            ${PROV_NAMES[p]}
+            <span class="gh-count">${vc}/${names.length}</span>
+        </div>`;
+        names.forEach(name => {
+            const isV = visited.has(name);
+            html += `<div class="district-item ${isV ? 'vis-item' : ''}" id="di-${cssId(name)}" onclick="toggleFromSidebar('${esc(name)}')">
+                <div class="district-dot ${isV ? 'vis' : 'unvisited'}"></div>
+                <span class="district-name">${name}</span>
+                <span class="district-check">✓</span>
+            </div>`;
+        });
+    });
+
+    if (!html) {
+        html = `<div style="padding:24px 10px;color:var(--muted);font-size:0.76rem;text-align:center;line-height:1.8">
+            Click a province on the map<br>or use the buttons above
+        </div>`;
+    }
+
+    document.getElementById('district-list').innerHTML = html;
+}
+
+function filterProvince(p) {
+    // If we're in single-province view and they click a different province tab,
+    // load that province's districts on the map too
+    if (currentView === 'single' && p !== 'all' && parseInt(p) !== activeProvinceNum) {
+        showSingleProvince(parseInt(p), null);
+        return;
+    }
+    buildSidebar(p);
+}
+
+// ── Stats ──
+function updateStats() {
+    const c = visited.size;
+    document.getElementById('visited-count').textContent = c;
+    const pct = Math.round((c / 77) * 100);
+    document.getElementById('pct-label').textContent = pct + '%';
+    document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(html) {
+    const el = document.getElementById('toast');
+    el.innerHTML = html;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function cssId(s) { return s.replace(/[^a-z0-9]/gi, '_'); }
+function esc(s)   { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// ── Init ──
+updateStats();
+</script>
+</body>
+</html>
