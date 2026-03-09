@@ -7,7 +7,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
         integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
@@ -18,14 +18,31 @@
 
     <style>
         :root {
-            --bg: #0d0f14;
-            --surface: #13161e;
-            --card: #1a1e28;
-            --border: #252a38;
-            --accent: #c8965a;
-            --accent2: #7fb3c8;
-            --text: #e8e0d0;
-            --muted: #6b7280;
+            /* Core palette */
+            --bg:        #0b0809;
+            --surface:   #110d0e;
+            --card:      #1a1215;
+            --card2:     #221719;
+            --border:    #2e2024;
+            --border2:   #3d2a2f;
+
+            /* Accent trio */
+            --gold:      #c9a84c;
+            --gold2:     #e8c97a;
+            --gold-dim:  #7a6130;
+            --burgundy:  #8b1a2f;
+            --burg-hi:   #b8223e;
+            --burg-glow: rgba(139,26,47,0.35);
+            --purple:    #6b3fa0;
+            --purple-hi: #8b5fcf;
+            --purple-dim:#3d2460;
+
+            /* Text */
+            --text:      #f0e8df;
+            --text2:     #c4b8ae;
+            --muted:     #6b5f58;
+
+            /* Province colours — warm, rich */
             --p1: #c0392b;
             --p2: #27ae60;
             --p3: #2980b9;
@@ -41,26 +58,50 @@
             height: 100%;
             background: var(--bg);
             color: var(--text);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
             overflow: hidden;
+        }
+
+        /* ── Decorative grain overlay ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9998;
         }
 
         .app {
             display: grid;
-            grid-template-rows: 62px 1fr;
+            grid-template-rows: 66px 1fr;
             height: 100vh;
         }
 
+        /* ─────────────── HEADER ─────────────── */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 18px;
+            padding: 0 20px;
             background: var(--surface);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border2);
             z-index: 1000;
             flex-shrink: 0;
             gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle burgundy shimmer behind header */
+        header::before {
+            content: '';
+            position: absolute;
+            left: -60px; top: -40px;
+            width: 260px; height: 160px;
+            background: radial-gradient(ellipse, rgba(139,26,47,0.22) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .header-left {
@@ -68,20 +109,25 @@
             align-items: baseline;
             gap: 10px;
             flex-shrink: 0;
+            position: relative;
         }
 
         .logo-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.45rem;
             font-weight: 700;
             color: var(--text);
+            letter-spacing: 0.02em;
         }
 
+        .logo-title .mt-icon { margin-right: 4px; }
+
         .logo-sub {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Cormorant Garamond', serif;
             font-style: italic;
-            font-size: 0.75rem;
-            color: var(--accent);
+            font-size: 0.8rem;
+            color: var(--gold);
+            letter-spacing: 0.06em;
         }
 
         .header-right {
@@ -96,27 +142,31 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            padding: 5px 12px;
+            padding: 5px 13px;
             background: var(--card);
-            border: 1px solid var(--border);
+            border: 1px solid var(--border2);
             border-radius: 100px;
         }
 
         .stat-pill .num {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            font-family: 'Playfair Display', serif;
-            color: var(--accent);
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--gold);
         }
 
         .stat-pill .lbl {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.07em;
+            letter-spacing: 0.08em;
         }
 
-        .prog-wrap { width: 110px; }
+        /* ── Progress bar ── */
+        .prog-wrap {
+            width: 120px;
+            flex-shrink: 0;
+        }
 
         .prog-labels {
             display: flex;
@@ -129,23 +179,25 @@
         }
 
         .prog-track {
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
+            height: 5px;
+            background: var(--border2);
+            border-radius: 3px;
             overflow: hidden;
         }
 
         .prog-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            border-radius: 2px;
-            transition: width 0.5s ease;
+            background: linear-gradient(90deg, var(--burgundy), var(--purple-hi), var(--gold));
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(.4,0,.2,1);
             width: 0%;
+            box-shadow: 0 0 6px rgba(107,63,160,0.5);
         }
 
+        /* ─────────────── MAIN GRID ─────────────── */
         .main {
             display: grid;
-            grid-template-columns: 1fr 280px;
+            grid-template-columns: 1fr 288px;
             overflow: hidden;
             position: relative;
         }
@@ -158,24 +210,25 @@
 
         .leaflet-container {
             background: var(--bg) !important;
-            font-family: 'DM Sans', sans-serif !important;
+            font-family: 'Outfit', sans-serif !important;
         }
 
         .leaflet-tooltip {
-            background: rgba(13,15,20,0.95) !important;
-            border: 1px solid var(--border) !important;
+            background: rgba(11,8,9,0.96) !important;
+            border: 1px solid var(--border2) !important;
             color: var(--text) !important;
             border-radius: 6px !important;
-            font-family: 'DM Sans', sans-serif !important;
+            font-family: 'Outfit', sans-serif !important;
             font-size: 0.75rem !important;
-            padding: 4px 10px !important;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.6) !important;
+            padding: 5px 12px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7) !important;
             pointer-events: none !important;
             font-weight: 500;
             white-space: nowrap;
         }
         .leaflet-tooltip::before { display: none !important; }
 
+        /* ── Map controls ── */
         .map-controls {
             position: absolute;
             top: 12px;
@@ -187,61 +240,81 @@
         }
 
         .map-btn {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 13px;
+            background: rgba(17,13,14,0.92);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            padding: 8px 14px;
             border-radius: 8px;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
             font-size: 0.72rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.18s;
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 2px 14px rgba(0,0,0,0.45);
+            box-shadow: 0 2px 14px rgba(0,0,0,0.55);
             white-space: nowrap;
             -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(6px);
         }
 
         .map-btn:hover {
-            background: var(--card);
-            border-color: var(--accent);
-            color: var(--accent);
+            background: var(--card2);
+            border-color: var(--gold-dim);
+            color: var(--gold);
         }
 
         .map-btn.active {
-            background: rgba(200,150,90,0.15);
-            border-color: var(--accent);
-            color: var(--accent);
+            background: rgba(139,26,47,0.18);
+            border-color: var(--burg-hi);
+            color: var(--gold);
         }
 
+        /* ─────────────── SIDEBAR ─────────────── */
         .sidebar {
             background: var(--surface);
-            border-left: 1px solid var(--border);
+            border-left: 1px solid var(--border2);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* Purple glow top-right corner */
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 120px; height: 120px;
+            background: radial-gradient(ellipse, rgba(107,63,160,0.18) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .sidebar-top {
             padding: 14px 16px 10px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .sidebar-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 0.95rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
             font-weight: 700;
-            margin-bottom: 2px;
+            color: var(--text);
+            letter-spacing: 0.03em;
         }
 
         .sidebar-hint {
-            font-size: 0.66rem;
+            font-size: 0.64rem;
             color: var(--muted);
+            margin-top: 1px;
         }
 
+        /* Province filter tabs */
         .prov-tabs {
             display: flex;
             flex-wrap: wrap;
@@ -249,19 +322,21 @@
             padding: 8px 12px 7px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .prov-tab {
-            padding: 3px 9px;
+            padding: 3px 10px;
             border-radius: 100px;
-            font-size: 0.64rem;
+            font-size: 0.63rem;
             font-weight: 600;
             letter-spacing: 0.04em;
             text-transform: uppercase;
             cursor: pointer;
             border: 1.5px solid transparent;
             transition: all 0.18s;
-            opacity: 0.5;
+            opacity: 0.45;
             color: var(--text);
             background: var(--card);
             -webkit-tap-highlight-color: transparent;
@@ -270,7 +345,7 @@
         .prov-tab:hover { opacity: 0.8; }
         .prov-tab.active { opacity: 1; }
 
-        .prov-tab[data-p="all"].active { border-color: var(--accent); color: var(--accent); }
+        .prov-tab[data-p="all"].active { border-color: var(--gold); color: var(--gold); }
         .prov-tab[data-p="1"] { color: var(--p1); } .prov-tab[data-p="1"].active { border-color: var(--p1); }
         .prov-tab[data-p="2"] { color: var(--p2); } .prov-tab[data-p="2"].active { border-color: var(--p2); }
         .prov-tab[data-p="3"] { color: var(--p3); } .prov-tab[data-p="3"].active { border-color: var(--p3); }
@@ -279,26 +354,29 @@
         .prov-tab[data-p="6"] { color: var(--p6); } .prov-tab[data-p="6"].active { border-color: var(--p6); }
         .prov-tab[data-p="7"] { color: var(--p7); } .prov-tab[data-p="7"].active { border-color: var(--p7); }
 
+        /* District list */
         .district-list {
             flex: 1;
             overflow-y: auto;
             padding: 5px 7px;
             scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
+            scrollbar-color: var(--border2) transparent;
+            position: relative;
+            z-index: 1;
         }
 
         .district-list::-webkit-scrollbar { width: 4px; }
         .district-list::-webkit-scrollbar-track { background: transparent; }
-        .district-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .district-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
         .prov-group-header {
             display: flex;
             align-items: center;
             gap: 7px;
             padding: 9px 7px 4px;
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
             font-weight: 600;
             color: var(--muted);
             position: sticky;
@@ -314,49 +392,124 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 7px;
+            padding: 6px 8px;
             border-radius: 7px;
             margin-bottom: 1px;
             transition: background 0.12s;
             cursor: pointer;
             border-left: 2px solid transparent;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
         }
 
         .district-item:hover { background: var(--card); }
 
-        .district-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        /* Unvisited dot */
+        .district-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all 0.25s;
+        }
         .district-dot.unvisited { background: var(--muted); opacity: 0.3; }
-        .district-dot.vis { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
 
-        .district-name { font-size: 0.76rem; color: var(--text); opacity: 0.6; flex: 1; transition: all 0.2s; }
-        .district-item.vis-item .district-name { opacity: 1; color: var(--accent); }
-        .district-check { font-size: 0.62rem; color: var(--accent); opacity: 0; transition: opacity 0.2s; }
+        /* Visited dot — gold pulse */
+        .district-dot.vis {
+            background: var(--gold);
+            box-shadow: 0 0 6px var(--gold), 0 0 14px rgba(201,168,76,0.4);
+        }
+
+        /* Unvisited district name */
+        .district-name {
+            font-size: 0.76rem;
+            color: var(--text2);
+            opacity: 0.55;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        /* Visited item — the whole row transforms */
+        .district-item.vis-item {
+            background: linear-gradient(90deg, rgba(139,26,47,0.15) 0%, rgba(107,63,160,0.08) 100%);
+            border-left-color: var(--burg-hi);
+            border-radius: 0 7px 7px 0;
+        }
+
+        .district-item.vis-item:hover {
+            background: linear-gradient(90deg, rgba(139,26,47,0.25) 0%, rgba(107,63,160,0.15) 100%);
+        }
+
+        .district-item.vis-item .district-name {
+            opacity: 1;
+            color: var(--gold2);
+            font-weight: 500;
+        }
+
+        .district-check {
+            font-size: 0.6rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: var(--burg-hi);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
         .district-item.vis-item .district-check { opacity: 1; }
 
+        /* Visited badge shimmer on row */
+        .district-item.vis-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0 7px 7px 0;
+            background: linear-gradient(90deg, transparent 60%, rgba(201,168,76,0.04) 100%);
+            pointer-events: none;
+        }
+
         @keyframes focusFlash {
-            0%   { background: rgba(200,150,90,0.12); border-left-color: var(--accent); }
+            0%   { background: rgba(139,26,47,0.2); border-left-color: var(--burg-hi); }
             100% { background: transparent; border-left-color: transparent; }
         }
         .district-item.flash { animation: focusFlash 2s ease forwards; }
 
-        .legend { padding: 9px 16px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
-        .legend-title { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-        .legend-rows { display: flex; flex-direction: column; gap: 4px; }
-        .legend-row { display: flex; align-items: center; gap: 7px; font-size: 0.7rem; color: var(--muted); }
-        .sw { width: 16px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-        .sw.unvisited { background: var(--muted); opacity: 0.4; }
-        .sw.visited-sw { background: #1c1c1c; border: 1px solid #555; }
+        /* ── Legend ── */
+        .legend {
+            padding: 9px 16px 13px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
 
+        .legend-title {
+            font-size: 0.58rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 7px;
+        }
+
+        .legend-rows { display: flex; flex-direction: column; gap: 5px; }
+        .legend-row { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--muted); }
+
+        .sw { width: 18px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+        .sw.unvisited { background: var(--muted); opacity: 0.3; }
+        .sw.visited-sw {
+            background: linear-gradient(90deg, var(--burgundy), var(--purple));
+            border: 1px solid var(--burg-hi);
+            box-shadow: 0 0 6px var(--burg-glow);
+        }
+
+        /* ─────────────── TOAST ─────────────── */
         .toast {
             position: fixed;
             bottom: 28px;
             left: 50%;
             transform: translateX(-50%) translateY(16px);
-            background: var(--card);
-            border: 1px solid var(--border);
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            border-top: 1px solid var(--burg-hi);
             border-radius: 10px;
-            padding: 9px 16px;
+            padding: 9px 18px;
             font-size: 0.78rem;
             color: var(--text);
             z-index: 9999;
@@ -364,30 +517,55 @@
             transition: opacity 0.25s, transform 0.25s;
             pointer-events: none;
             white-space: nowrap;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px var(--burg-glow);
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast .tn { color: var(--accent); font-weight: 600; }
+        .toast .tn { color: var(--gold); font-weight: 600; }
 
+        /* ─────────────── MOBILE ─────────────── */
         @media (max-width: 700px) {
-            .app { grid-template-rows: 52px 1fr; }
+            .app { grid-template-rows: 58px 1fr; }
+
             header { padding: 0 10px; gap: 7px; }
             .logo-sub { display: none; }
-            .logo-title { font-size: 1rem; }
-            .stat-pill .lbl { display: none; }
+            .logo-title { font-size: 1.1rem; }
             .stat-pill { padding: 4px 9px; }
-            .stat-pill .num { font-size: 0.88rem; }
-            .prog-wrap { width: 75px; }
-            .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
-            #map { height: 100%; min-height: 0; }
-            .sidebar { border-left: none; border-top: 2px solid var(--border); max-height: 40vh; min-height: 160px; }
+            .stat-pill .num { font-size: 0.9rem; }
+            .stat-pill .lbl { display: none; }
+
+            /* Keep progress bar visible on mobile */
+            .prog-wrap {
+                width: 80px;
+                display: block !important;
+            }
+
+            .main {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+            }
+
+            #map {
+                height: 100%;
+                min-height: 0;
+                /* Fix mobile drag — allow touch scrolling to map */
+                touch-action: pan-x pan-y;
+            }
+
+            .sidebar {
+                border-left: none;
+                border-top: 2px solid var(--border2);
+                max-height: 42vh;
+                min-height: 160px;
+            }
+
             .map-controls { top: 8px; left: 8px; gap: 5px; }
             .map-btn { font-size: 0.67rem; padding: 7px 10px; }
-            .toast { bottom: calc(40vh + 10px); }
+            .toast { bottom: calc(42vh + 10px); }
         }
 
         @media (max-width: 380px) {
-            .prog-wrap { display: none; }
+            .prog-wrap { width: 65px; }
+            .prog-labels span:first-child { display: none; }
         }
     </style>
 </head>
@@ -396,7 +574,7 @@
 <div class="app">
     <header>
         <div class="header-left">
-            <span class="logo-title">🏔 Nepal Journey</span>
+            <span class="logo-title"><span class="mt-icon">🏔</span>Nepal Journey</span>
             <span class="logo-sub">Visited Districts Explorer</span>
         </div>
         <div class="header-right">
@@ -497,31 +675,30 @@ function saveVisited() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...vi
 let visited = loadVisited();
 
 // ── State ──
-// 'provinces' | 'single' | 'all-districts'
 let currentView = 'provinces';
-let activeProvinceNum = null; // which single province is shown
-let activeFilter = 'all';    // sidebar filter
+let activeProvinceNum = null;
+let activeFilter = 'all';
+let currentDistrictEntries = [];
 
-// Cache: pNum -> array of {name, layer} for that province's districts
-// We rebuild per-province each time from the raw GeoJSON.
-// We also keep a flat map: name -> layer for the currently displayed districts.
-const cachedGeoJson = {}; // pNum -> parsed geojson (raw data, already loaded)
-let currentDistrictEntries = []; // [{name, layer, provinceNum}] — only what's on map right now
-
-// ── Map ──
+// ── Map init — enable dragging + touch on mobile ──
 const map = L.map('map', {
     scrollWheelZoom: true,
     touchZoom: true,
     doubleClickZoom: false,
     zoomControl: true,
     dragging: true,
-    tap: true,
-    tapTolerance: 15,
-    inertia: true
+    tap: false,           // disables Leaflet's custom tap (interferes with native drag)
+    tapTolerance: 10,
+    inertia: true,
+    inertiaDeceleration: 3000
 }).setView([28.3949, 84.124], 7);
 map.zoomControl.setPosition('topright');
 
-// Two separate layer groups: one for provinces, one for districts
+// Ensure dragging is forced on after load (fixes some mobile Leaflet quirks)
+map.whenReady(() => {
+    if (!map.dragging.enabled()) map.dragging.enable();
+});
+
 const provinceLayerGroup = L.layerGroup().addTo(map);
 const districtLayerGroup = L.layerGroup().addTo(map);
 
@@ -533,8 +710,8 @@ function dName(feature) {
 function lighten(hex, amt) {
     const n = parseInt(hex.replace('#',''), 16);
     const r = Math.min(255, ((n >> 16) & 0xff) + Math.round(255 * amt));
-    const g = Math.min(255, ((n >> 8) & 0xff) + Math.round(255 * amt));
-    const b = Math.min(255, (n & 0xff) + Math.round(255 * amt));
+    const g = Math.min(255, ((n >> 8)  & 0xff) + Math.round(255 * amt));
+    const b = Math.min(255, (n         & 0xff)  + Math.round(255 * amt));
     return `rgb(${r},${g},${b})`;
 }
 
@@ -542,24 +719,25 @@ function getProvNum(feature) {
     return feature.properties.Province || feature.properties.PROVINCE || feature.properties.province;
 }
 
-// ── Feature styling ──
+// ── District styling ──
 function styleDistrict(feature, hovered) {
-    const name = dName(feature);
-    const isV = visited.has(name);
-    const pNum = getProvNum(feature);
-    const base = PROV_COLORS[pNum] || '#7fb3c8';
+    const name   = dName(feature);
+    const isV    = visited.has(name);
+    const pNum   = getProvNum(feature);
+    const base   = PROV_COLORS[pNum] || '#7fb3c8';
+
     if (isV) {
         return {
-            weight: hovered ? 2.5 : 1.5,
-            color: hovered ? '#999' : '#555',
-            fillColor: hovered ? '#2e2e2e' : '#1a1a1a',
-            fillOpacity: hovered ? 0.97 : 0.9
+            weight:      hovered ? 2.5 : 1.2,
+            color:       hovered ? '#e8c97a' : 'rgba(201,168,76,0.45)',
+            fillColor:   hovered ? '#4a1535' : '#2d0f1a',
+            fillOpacity: hovered ? 0.97 : 0.88,
         };
     }
     return {
-        weight: hovered ? 2.5 : 1.2,
-        color: hovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
-        fillColor: hovered ? lighten(base, 0.18) : base,
+        weight:      hovered ? 2.5 : 1.2,
+        color:       hovered ? '#e8c97a' : 'rgba(201,168,76,0.45)',
+        fillColor:   hovered ? lighten(base, 0.18) : base,
         fillOpacity: hovered ? 0.9 : 0.65
     };
 }
@@ -568,14 +746,14 @@ function styleProvince(feature, hovered) {
     const pNum = getProvNum(feature);
     const base = PROV_COLORS[pNum] || '#7fb3c8';
     return {
-        weight: hovered ? 2.5 : 1.2,
-        color: hovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
-        fillColor: hovered ? lighten(base, 0.18) : base,
+        weight:      hovered ? 2.5 : 1.2,
+        color:       hovered ? '#e8c97a' : 'rgba(201,168,76,0.45)',
+        fillColor:   hovered ? lighten(base, 0.18) : base,
         fillOpacity: hovered ? 0.9 : 0.65
     };
 }
 
-// ── Province layer (always kept, shown/hidden) ──
+// ── Province layer ──
 const provinceGeoLayer = L.geoJson(provinceData, {
     style: f => styleProvince(f, false),
     onEachFeature(feature, layer) {
@@ -594,35 +772,29 @@ const provinceGeoLayer = L.geoJson(provinceData, {
     }
 });
 
-// Render province layer into its group
 provinceGeoLayer.addTo(provinceLayerGroup);
 map.fitBounds(provinceGeoLayer.getBounds(), { padding: [20, 20] });
 
-// ── Core: show only ONE province's districts ──
+// ── Show single province ──
 function showSingleProvince(pNum, bounds) {
     currentView = 'single';
     activeProvinceNum = pNum;
     updateButtonStates();
 
-    // Hide province layer
     if (map.hasLayer(provinceLayerGroup)) map.removeLayer(provinceLayerGroup);
 
-    // *** KEY FIX: wipe ALL existing district layers before drawing new ones ***
     districtLayerGroup.clearLayers();
     currentDistrictEntries = [];
 
-    // Draw only this province's districts
     drawProvince(pNum);
 
-    // Zoom to this province
     if (bounds) map.fitBounds(bounds, { padding: [40, 40] });
 
-    // Update sidebar to show only this province
     buildSidebar(pNum);
     updateStats();
 }
 
-// ── Draw a province's districts onto districtLayerGroup ──
+// ── Draw province districts ──
 function drawProvince(pNum) {
     const json = PROV_DATA[pNum]();
     if (!json) return;
@@ -646,16 +818,14 @@ function drawProvince(pNum) {
     geoLayer.addTo(districtLayerGroup);
 }
 
-// ── Show ALL 7 provinces' districts ──
+// ── Show all districts ──
 function showAllDistricts() {
     currentView = 'all-districts';
     activeProvinceNum = null;
     updateButtonStates();
 
-    // Hide province layer
     if (map.hasLayer(provinceLayerGroup)) map.removeLayer(provinceLayerGroup);
 
-    // Wipe and redraw all 7
     districtLayerGroup.clearLayers();
     currentDistrictEntries = [];
 
@@ -666,30 +836,26 @@ function showAllDistricts() {
     updateStats();
 }
 
-// ── Go back to province overview ──
+// ── Province overview ──
 function goToProvinceView() {
     currentView = 'provinces';
     activeProvinceNum = null;
     updateButtonStates();
 
-    // Clear all district layers
     districtLayerGroup.clearLayers();
     currentDistrictEntries = [];
 
-    // Show province layer
     if (!map.hasLayer(provinceLayerGroup)) provinceLayerGroup.addTo(map);
 
     map.fitBounds(provinceGeoLayer.getBounds(), { padding: [20, 20] });
 
-    // Reset sidebar
-    const listEl = document.getElementById('district-list');
-    listEl.innerHTML = `<div style="padding:24px 10px;color:var(--muted);font-size:0.76rem;text-align:center;line-height:1.8">
-        Click a province on the map<br>or use the buttons above
-    </div>`;
+    document.getElementById('district-list').innerHTML = `
+        <div style="padding:24px 10px;color:var(--muted);font-size:0.76rem;text-align:center;line-height:1.8">
+            Click a province on the map<br>or use the buttons above
+        </div>`;
     updateButtonStates();
 }
 
-// ── Update header button active states ──
 function updateButtonStates() {
     document.getElementById('provinces-btn').classList.toggle('active', currentView === 'provinces');
     document.getElementById('districts-btn').classList.toggle('active', currentView === 'all-districts');
@@ -716,7 +882,6 @@ function toggleFromSidebar(name) {
     if (entry) {
         toggleVisited(name, entry.layer, entry.layer.feature);
     } else {
-        // District not on map (e.g. in province view) — toggle data only
         if (visited.has(name)) { visited.delete(name); showToast(`<span class="tn">${name}</span> removed`); }
         else                   { visited.add(name);    showToast(`✓ <span class="tn">${name}</span> visited!`); }
         saveVisited();
@@ -729,12 +894,10 @@ function toggleFromSidebar(name) {
 function buildSidebar(filter) {
     activeFilter = filter;
 
-    // Update tab highlights
     document.querySelectorAll('.prov-tab').forEach(t => {
         t.classList.toggle('active', String(t.dataset.p) === String(filter));
     });
 
-    // Group currentDistrictEntries by province
     const byProvince = {};
     for (let p = 1; p <= 7; p++) byProvince[p] = [];
     const seen = new Set();
@@ -777,8 +940,6 @@ function buildSidebar(filter) {
 }
 
 function filterProvince(p) {
-    // If we're in single-province view and they click a different province tab,
-    // load that province's districts on the map too
     if (currentView === 'single' && p !== 'all' && parseInt(p) !== activeProvinceNum) {
         showSingleProvince(parseInt(p), null);
         return;
